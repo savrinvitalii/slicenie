@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Мне интересны{% endblock %}
+{% block body %}
+<h1>Люди, которыми я интересуюсь</h1>
+<p class="small muted">Они не получают уведомлений, а видят только общее число интересующихся.</p>
+<ul class="plain">{% for r in rows %}<li><a href="{{ url_for('profile', username=r.username) }}">{{ r.display_name }}</a> <span class="small muted">· мыслей: {{ r.n }}</span></li>
+{% else %}<li class="muted">Пока никого.</li>{% endfor %}</ul>
+{% endblock %}

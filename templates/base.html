@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Сличение{% endblock %} — Сличение</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="{{ url_for('home') }}">Сличение</a>
+  <nav>
+    <a href="{{ url_for('themes') }}">Темы</a>
+    <a href="{{ url_for('authors') }}">Авторы</a>
+    <a href="{{ url_for('eras_page') }}">Эпохи</a>
+    <a href="{{ url_for('compare') }}">Сравнение{% if basket %} <span class="count">{{ basket|length }}</span>{% endif %}</a>
+  </nav>
+  <form class="search" action="{{ url_for('aphorisms') }}" method="get">
+    <input type="search" name="q" placeholder="Поиск по тексту и автору" aria-label="Поиск">
+  </form>
+  <div class="who">
+    {% if me %}
+      <a href="{{ url_for('profile', username=me.username) }}">{{ me.display_name }}</a>
+      <a href="{{ url_for('kin_page') }}">Родные</a>
+      <form method="post" action="{{ url_for('logout') }}" class="inline">
+        <input type="hidden" name="csrf" value="{{ csrf() }}"><button class="link">Выйти</button>
+      </form>
+    {% else %}
+      {% if readonly %}<span class="small muted">демо · только просмотр</span>
+      {% else %}<a href="{{ url_for('login') }}">Войти</a>
+      <a href="{{ url_for('register') }}">Регистрация</a>{% endif %}
+    {% endif %}
+  </div>
+</header>
+<main>
+  {% for m in get_flashed_messages() %}<p class="flash">{{ m }}</p>{% endfor %}
+  {% block body %}{% endblock %}
+</main>
+<footer>
+  <p>«Читай серьёзные книги — а жизнь сделает всё остальное».</p>
+  <p class="small">Популярность афоризма не означает его истинность: это лишь отклик людей.</p>
+</footer>
+</body>
+</html>

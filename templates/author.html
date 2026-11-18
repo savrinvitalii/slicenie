@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "_macros.html" import card with context %}
+{% block title %}{{ au.name }}{% endblock %}
+{% block body %}
+<section class="author-head">
+  {{ portrait(au.id, 150) }}
+  <div><h1>{{ au.name }}</h1><p class="muted">{{ au.years }}</p>
+    <a class="about-link" href="{{ url_for('author_about', aid=au.id) }}">Биография и главные достижения →</a></div>
+</section>
+<h2>Афоризмы <span class="small muted">· {{ total }}</span></h2>
+{% for a in items %}{{ card(a, request.full_path) }}{% endfor %}
+<p class="pager">
+  {% if page > 1 %}<a href="{{ url_for('author', aid=au.id, page=page-1) }}">← назад</a>{% endif %}
+  {% if more %}<a href="{{ url_for('author', aid=au.id, page=page+1) }}">дальше →</a>{% endif %}
+</p>
+{% endblock %}

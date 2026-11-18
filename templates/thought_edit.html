@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Своя мысль{% endblock %}
+{% block body %}
+<h1>{{ 'Правка мысли' if t.status == 'published' else 'Своя мысль' }}</h1>
+<p class="muted">Мысли, из которых она растёт:</p>
+{% set src = sources %}
+<ol class="sources">{% for a in src %}<li><a href="{{ url_for('aphorism', aid=a.id) }}">«{{ a.text }}»</a> — {{ a.author_name }}</li>{% endfor %}</ol>
+<form method="post" class="stack">
+  <input type="hidden" name="csrf" value="{{ csrf() }}">
+  <textarea name="body" rows="9" maxlength="8000" placeholder="Скажите это своими словами…">{{ t.body }}</textarea>
+  <label class="check"><input type="checkbox" name="kin_only" {{ 'checked' if t.kin_only }}> Только для родных (связь подтверждена обеими сторонами)</label>
+  <div class="actions">
+    <button class="btn" name="action" value="publish">{{ 'Сохранить' if t.status == 'published' else 'Опубликовать' }}</button>
+    {% if t.status == 'draft' %}<button class="btn ghost" name="action" value="save">Сохранить черновик</button>{% endif %}
+  </div>
+</form>
+{% if t.status == 'published' %}<p class="small muted">Последнее изменение: {{ (t.updated_at or t.published_at)|date }}</p>{% endif %}
+<form method="post" action="{{ url_for('thought_delete', tid=t.id) }}" onsubmit="return confirm('Удалить мысль?')" class="inline">
+  <input type="hidden" name="csrf" value="{{ csrf() }}"><button class="link">удалить</button></form>
+{% endblock %}

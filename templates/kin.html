@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Родные{% endblock %}
+{% block body %}
+<h1>Родные</h1>
+<p class="small muted">Связь действует только после подтверждения обеими сторонами. Родные видят ваши закрытые мысли и число интересующихся вами по именам среди родных.</p>
+
+{% if incoming %}<h2>Ждут вашего подтверждения</h2>
+<ul class="plain">{% for r in incoming %}<li>{{ r.display_name }} (@{{ r.username }}){% if r.relation %} — {{ r.relation }}{% endif %}
+  <form method="post" action="{{ url_for('kin_act', username=r.username, action='confirm') }}" class="inline"><input type="hidden" name="csrf" value="{{ csrf() }}"><button class="btn">Подтвердить</button></form>
+  <form method="post" action="{{ url_for('kin_act', username=r.username, action='decline') }}" class="inline"><input type="hidden" name="csrf" value="{{ csrf() }}"><button class="btn ghost">Отклонить</button></form></li>{% endfor %}</ul>{% endif %}
+
+<h2>Подтверждённые</h2>
+<ul class="plain">{% for r in confirmed %}<li>◆ <a href="{{ url_for('profile', username=r.username) }}">{{ r.display_name }}</a>{% if r.relation %} — {{ r.relation }}{% endif %}
+  <form method="post" action="{{ url_for('kin_act', username=r.username, action='remove') }}" class="inline" onsubmit="return confirm('Разорвать связь?')"><input type="hidden" name="csrf" value="{{ csrf() }}"><button class="link">убрать</button></form></li>
+{% else %}<li class="muted">Пока никого.</li>{% endfor %}</ul>
+
+{% if outgoing %}<h2>Ожидают ответа</h2>
+<ul class="plain">{% for r in outgoing %}<li>{{ r.display_name }} (@{{ r.username }})
+  <form method="post" action="{{ url_for('kin_act', username=r.username, action='decline') }}" class="inline"><input type="hidden" name="csrf" value="{{ csrf() }}"><button class="link">отозвать</button></form></li>{% endfor %}</ul>{% endif %}
+
+<h2>Предложить связь</h2>
+<form method="post" action="{{ url_for('kin_propose') }}" class="stack narrow">
+  <input type="hidden" name="csrf" value="{{ csrf() }}">
+  <input name="username" placeholder="логин родственника" required>
+  <input name="relation" placeholder="кто он вам (мама, брат…) — по желанию" maxlength="40">
+  <button class="btn">Предложить</button>
+</form>
+{% endblock %}

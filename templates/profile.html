@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ u.display_name }}{% endblock %}
+{% block body %}
+<h1>{{ u.display_name }} {% if kin %}<span class="kin-mark">◆ родной</span>{% endif %}</h1>
+<p class="muted">@{{ u.username }} · с нами с {{ u.created_at|date }}</p>
+{% if u.bio %}<p>{{ u.bio }}</p>{% endif %}
+<p class="small muted">Интересуются этим человеком: {{ n_interest }}
+  {% if kin_interested %}· среди родных: {% for k in kin_interested %}{{ k.display_name }}{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}</p>
+{% if mine %}
+  <p class="small"><a href="{{ url_for('settings') }}">о себе</a> · <a href="{{ url_for('my_interests') }}">кем я интересуюсь</a> · <a href="{{ url_for('kin_page') }}">родные</a></p>
+{% elif me %}
+  <form method="post" action="{{ url_for('interest_toggle', username=u.username) }}" class="inline">
+    <input type="hidden" name="csrf" value="{{ csrf() }}">
+    <button class="btn {{ 'ghost' if interested }}">{{ 'Больше не интересуюсь' if interested else 'Мне интересен этот человек' }}</button></form>
+{% endif %}
+
+{% if drafts %}
+<h2>Черновики</h2>
+<ul class="plain">{% for d in drafts %}<li><a href="{{ url_for('thought_edit', tid=d.id) }}">{{ (d.body or 'без текста')[:80] }}</a></li>{% endfor %}</ul>
+{% endif %}
+
+<h2>Собственные мысли</h2>
+{% for t in thoughts %}
+  <div class="own">
+    {% if t.kin_only %}<span class="kin-mark">◆ только для родных</span>{% endif %}
+    {{ t.body|paras }}
+    <p class="small muted"><a href="{{ url_for('thought', tid=t.id) }}">{{ t.published_at|date }}</a>{% if t.updated_at %} · изменено {{ t.updated_at|date }}{% endif %}</p>
+  </div>
+{% else %}<p class="muted">Опубликованных мыслей пока нет.</p>{% endfor %}
+{% endblock %}

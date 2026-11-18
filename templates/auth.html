@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Регистрация' if mode == 'register' else 'Вход' }}{% endblock %}
+{% block body %}
+<h1>{{ 'Регистрация' if mode == 'register' else 'Вход' }}</h1>
+<form method="post" class="stack narrow">
+  <input type="hidden" name="csrf" value="{{ csrf() }}">
+  <input name="username" placeholder="логин (латиница/кириллица, цифры)" required autocomplete="username">
+  {% if mode == 'register' %}<input name="display_name" placeholder="как вас называть" required maxlength="60">{% endif %}
+  <input type="password" name="password" placeholder="пароль{{ ' (от 8 знаков)' if mode == 'register' }}" required autocomplete="{{ 'new-password' if mode == 'register' else 'current-password' }}">
+  <button class="btn">{{ 'Создать профиль' if mode == 'register' else 'Войти' }}</button>
+</form>
+<p class="small">{% if mode == 'register' %}Уже есть профиль? <a href="{{ url_for('login') }}">Войти</a>{% else %}Впервые здесь? <a href="{{ url_for('register') }}">Регистрация</a>{% endif %}</p>
+{% endblock %}

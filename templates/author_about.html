@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ au.name }} — биография{% endblock %}
+{% block body %}
+<section class="author-head">
+  {{ portrait(au.id, 150) }}
+  <div><h1>{{ au.name }}</h1><p class="muted">{{ au.years }}</p></div>
+</section>
+<h2>Кратко</h2>
+<p>{{ au.bio }}</p>
+{% if achievements %}
+<h2>Главные достижения</h2>
+<ol class="achievements">{% for x in achievements %}<li>{{ x }}</li>{% endfor %}</ol>
+{% endif %}
+<p><a href="{{ url_for('author', aid=au.id) }}">← Афоризмы автора ({{ total }})</a></p>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "_macros.html" import card with context %}
+{% block title %}{{ title }}{% endblock %}
+{% block body %}
+{% if crumb %}<p class="small crumb"><a href="{{ crumb.url }}">← {{ crumb.name }}</a></p>{% endif %}
+<h1>{{ title }}{% if query %}: «{{ query }}»{% endif %}</h1>
+<form class="filter small" method="get" action="{{ form_action }}">
+  <label>В тексте <input type="text" name="text" value="{{ f_text }}" placeholder="слово или фраза"></label>
+  <label>Автор <input type="text" name="au" value="{{ f_au }}" list="authors-list" placeholder="имя автора"></label>
+  <datalist id="authors-list">{% for n in authors_all %}<option value="{{ n }}">{% endfor %}</datalist>
+  {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+  <input type="hidden" name="sort" value="{{ sort }}">
+  {% if era %}<input type="hidden" name="era" value="{{ era }}">{% endif %}
+  {% for x in extra %}<input type="hidden" name="t" value="{{ x }}">{% endfor %}
+  {% if mode == 'all' and not locked %}<input type="hidden" name="mode" value="all">{% endif %}
+  <button class="btn">Найти</button>
+  {% if f_text or f_au or query %}<a href="{{ link(text=None, au=None, q=None, page=None) }}">сбросить</a>{% endif %}
+</form>
+<p class="sort small">Порядок:
+  {% for k, label in [('activity','по отклику'),('theme','по теме'),('author','по автору'),('time','от древних к новым'),('time_desc','от новых к древним')] %}
+    {% if sort == k %}<strong>{{ label }}</strong>{% else %}<a href="{{ link(sort=k, page=None) }}">{{ label }}</a>{% endif %}{% if not loop.last %} · {% endif %}
+  {% endfor %}
+</p>
+<p class="sort small">Эпоха:
+  {% if not era %}<strong>все</strong>{% else %}<a href="{{ link(era=None, page=None) }}">все</a>{% endif %}
+  {% for key, ename, lo, hi in eras %} · {% if era == key %}<strong>{{ ename }}</strong>{% else %}<a href="{{ link(era=key, page=None) }}">{{ ename }}</a>{% endif %}{% endfor %}
+</p>
+<details class="sort small" {{ 'open' if n_sel }}>
+  <summary>Темы{% if locked %} — уточнить{% endif %}{% if n_sel %}: выбрано {{ n_sel }}{% endif %}</summary>
+  {% for grp in chip_groups %}
+  {% if grp.name %}<p class="small muted chips-title">{{ grp.name }}</p>{% endif %}
+  <p class="chips">
+    {% for c in grp.chips %}<a class="tag {{ 'on' if c.on }}" href="{{ c.href }}">{% if c.on %}✓ {% endif %}{{ c.name }}</a>{% endfor %}
+  </p>
+  {% endfor %}
+  {% if n_sel > 1 and not locked %}
+  <p>{% if mode == 'all' %}Показаны афоризмы со <strong>всеми</strong> выбранными темами · <a href="{{ link(mode=None, page=None) }}">с любой из них</a>
+     {% else %}Показаны афоризмы с <strong>любой</strong> из выбранных тем · <a href="{{ link(mode='all', page=None) }}">со всеми сразу</a>{% endif %}</p>
+  {% endif %}
+  {% if n_sel %}<p><a href="{{ link(t=None, mode=None, page=None) }}">сбросить темы</a></p>{% endif %}
+</details>
+{% if sort == 'activity' %}<p class="small muted">Сверху — афоризмы, которые вызвали больше откликов. Это не значит, что они вернее.</p>{% endif %}
+{% for a in items %}{{ card(a, request.full_path) }}{% else %}<p>Ничего не найдено.</p>{% endfor %}
+<p class="pager">
+  {% if page > 1 %}<a href="{{ link(page=page-1) }}">← назад</a>{% endif %}
+  {% if more %}<a href="{{ link(page=page+1) }}">дальше →</a>{% endif %}
+</p>
+{% endblock %}

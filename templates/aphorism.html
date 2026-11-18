@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}{{ a.author_name }}{% endblock %}
+{% block body %}
+<article class="single">
+  <blockquote class="quote">{{ a.text }}</blockquote>
+  <p class="meta">
+    <a href="{{ url_for('author', aid=a.author_id) }}">{{ a.author_name }}</a>
+    {% if a.year is not none %}· {{ a|year }}{% endif %}
+  </p>
+  {% if a.source %}<p class="small muted">Источник: {{ a.source }}</p>{% endif %}
+  <p id="themes">{% for t in a.themes %}<a class="tag" href="{{ url_for('theme', slug=t.slug) }}">{{ t.name }}</a>{% else %}<span class="small muted">Тема не указана.</span>{% endfor %}</p>
+  {% if me %}
+  <details class="theme-edit small">
+    <summary>Изменить темы</summary>
+    {% for t in a.themes %}
+    <form method="post" action="{{ url_for('aphorism_themes', aid=a.id) }}" class="inline row">
+      <input type="hidden" name="csrf" value="{{ csrf() }}"><input type="hidden" name="old" value="{{ t.slug }}">
+      <strong>{{ t.name }}</strong> →
+      <select name="theme"><option value="">заменить на…</option>
+        {% for grp in theme_groups %}<optgroup label="{{ grp.name }}">{% for x in grp.themes %}{% if x.slug != t.slug %}<option value="{{ x.slug }}">{{ x.name }}</option>{% endif %}{% endfor %}</optgroup>{% endfor %}</select>
+      <input type="text" name="new" maxlength="40" placeholder="или новая тема">
+      <button class="btn" name="act" value="replace">Заменить</button>
+      <button class="btn ghost" name="act" value="remove" onclick="return confirm('Убрать тему «{{ t.name }}»?')">Убрать</button>
+    </form>
+    {% endfor %}
+    <form method="post" action="{{ url_for('aphorism_themes', aid=a.id) }}" class="inline row">
+      <input type="hidden" name="csrf" value="{{ csrf() }}">
+      Добавить:
+      <select name="theme"><option value="">выберите тему…</option>
+        {% for grp in theme_groups %}<optgroup label="{{ grp.name }}">{% for x in grp.themes %}{% if x.slug not in a.themes|map(attribute='slug') %}<option value="{{ x.slug }}">{{ x.name }}</option>{% endif %}{% endfor %}</optgroup>{% endfor %}</select>
+      <input type="text" name="new" maxlength="40" placeholder="или новая тема">
+      <button class="btn" name="act" value="add">Добавить</button>
+    </form>
+    <p class="muted">Если заполнено поле «новая тема», берётся оно. Изменения видны всем.</p>
+  </details>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('compare_remove' if in_basket else 'compare_add', aid=a.id) }}" class="inline">
+    <input type="hidden" name="csrf" value="{{ csrf() }}"><input type="hidden" name="back" value="{{ request.path }}">
+    <button class="btn">{{ '✓ В сравнении — убрать' if in_basket else '+ Добавить к сравнению' }}</button>
+  </form>
+  {% if in_basket or basket %}<a class="btn ghost" href="{{ url_for('compare') }}">Открыть сравнение ({{ basket|length }})</a>{% endif %}
+</article>
+
+<section id="reactions">
+  <h2>Отклик</h2>
+  <div class="reacts">
+  {% for r in reactions %}
+    {% if me %}
+    <form method="post" action="{{ url_for('react', aid=a.id) }}" class="inline">
+      <input type="hidden" name="csrf" value="{{ csrf() }}"><input type="hidden" name="code" value="{{ r.code }}">
+      <button class="react {{ 'on' if mine == r.code }}" title="{{ r.label }}">{{ r.emoji }} <span>{{ r.label }}</span> <b>{{ r.n }}</b></button>
+    </form>
+    {% else %}
+    <span class="react"><span>{{ r.emoji }} {{ r.label }}</span> <b>{{ r.n }}</b></span>
+    {% endif %}
+  {% endfor %}
+  </div>
+  {% if me %}<p class="small muted">Одна реакция на афоризм. Нажмите ту же ещё раз, чтобы снять. Кто как ответил — не показывается.</p>
+  {% elif readonly %}<p class="small muted">В демо-версии отклики отключены: она только для просмотра.</p>
+  {% else %}<p class="small muted"><a href="{{ url_for('login', next=request.path) }}">Войдите</a>, чтобы откликнуться.</p>{% endif %}
+</section>
+
+<section id="comments">
+  <h2>Размышления</h2>
+  {% for c in comments %}
+  <div class="comment">
+    <p class="who2"><a href="{{ url_for('profile', username=c.username) }}">{{ c.display_name }}</a>
+      {% if c.user_id in kin %}<span class="kin-mark" title="Родственник">◆ родной</span>{% endif %}
+      <span class="small muted">· {{ c.created_at|date }}{% if c.edited_at %} (изм.){% endif %}</span></p>
+    {{ c.body|paras }}
+    {% if me and me.id == c.user_id %}
+    <p class="small"><a href="{{ url_for('comment_edit', cid=c.id) }}">изменить</a>
+      <form method="post" action="{{ url_for('comment_delete', cid=c.id) }}" class="inline" onsubmit="return confirm('Удалить?')">
+        <input type="hidden" name="csrf" value="{{ csrf() }}"><button class="link">удалить</button></form></p>
+    {% endif %}
+  </div>
+  {% else %}<p class="muted">Пока никто не написал. Можно быть первым.</p>{% endfor %}
+  {% if me %}
+  <form method="post" action="{{ url_for('comment_add', aid=a.id) }}" class="stack">
+    <input type="hidden" name="csrf" value="{{ csrf() }}">
+    <textarea name="body" rows="4" maxlength="4000" placeholder="Что вы об этом думаете?" required></textarea>
+    <button class="btn">Написать</button>
+  </form>
+  {% endif %}
+</section>
+
+{% if thoughts %}
+<section>
+  <h2>Собственные мысли, рождённые рядом с этим афоризмом</h2>
+  {% for t in thoughts %}
+  <p class="own"><a href="{{ url_for('thought', tid=t.id) }}">{{ t.body[:180] }}{% if t.body|length > 180 %}…{% endif %}</a><br>
+  <span class="small muted">{{ t.display_name }}, {{ t.published_at|date }}</span></p>
+  {% endfor %}
+</section>
+{% endif %}
+{% endblock %}

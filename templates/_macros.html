@@ -1,0 +1,31 @@
+{% macro card(a, back='') %}
+<article class="aph">
+  <blockquote><a href="{{ url_for('aphorism', aid=a.id) }}">{{ a.text }}</a></blockquote>
+  <p class="meta">
+    <a href="{{ url_for('author', aid=a.author_id) }}">{{ a.author_name }}</a>
+    {% if a.year is not none %}· {{ a|year }}{% endif %}
+    {% for t in a.themes %}<a class="tag" href="{{ url_for('theme', slug=t.slug) }}">{{ t.name }}</a>{% endfor %}
+  </p>
+  <p class="small muted">
+    {% if a.n_react %}{{ a.n_react }} реакц.{% endif %}{% if a.n_react and a.n_comm %} · {% endif %}{% if a.n_comm %}{{ a.n_comm }} размышл.{% endif %}
+    <span class="grow"></span>
+    {% if a.id in basket %}
+      <form method="post" action="{{ url_for('compare_remove', aid=a.id) }}" class="inline">
+        <input type="hidden" name="csrf" value="{{ csrf() }}"><input type="hidden" name="back" value="{{ back }}">
+        <button class="link">✓ в сравнении · убрать</button></form>
+    {% else %}
+      <form method="post" action="{{ url_for('compare_add', aid=a.id) }}" class="inline">
+        <input type="hidden" name="csrf" value="{{ csrf() }}"><input type="hidden" name="back" value="{{ back }}">
+        <button class="link">+ к сравнению</button></form>
+    {% endif %}
+  </p>
+</article>
+{% endmacro %}
+
+{% macro sources(items) %}
+<ol class="sources">
+{% for a in items %}
+  <li><a href="{{ url_for('aphorism', aid=a.id) }}">«{{ a.text }}»</a> — {{ a.author_name }}</li>
+{% endfor %}
+</ol>
+{% endmacro %}

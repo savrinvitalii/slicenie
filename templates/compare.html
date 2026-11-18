@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Сравнение{% endblock %}
+{% block body %}
+<h1>Сравнение</h1>
+{% if not items %}
+  <p>Здесь пока пусто. Откройте тему, прочитайте несколько мыслей и добавьте к сравнению те, что хотите сопоставить сами — сервис ничего не подбирает за вас.</p>
+  <p><a class="btn" href="{{ url_for('themes') }}">Выбрать тему</a></p>
+{% else %}
+  <p class="small">{{ items|length }} из {{ 15 }} ·
+    {% if view == 'side' %}<strong>рядом</strong> · <a href="{{ url_for('compare', view='list') }}">по порядку</a>
+    {% else %}<a href="{{ url_for('compare', view='side') }}">рядом</a> · <strong>по порядку</strong>{% endif %}
+    · порядок — ваш, как вы добавляли</p>
+  <div class="{{ 'columns' if view == 'side' else 'rows' }}">
+  {% for a in items %}
+    <article class="aph cmp">
+      <blockquote>{{ a.text }}</blockquote>
+      <p class="meta"><a href="{{ url_for('author', aid=a.author_id) }}">{{ a.author_name }}</a> · {{ a|year }}</p>
+      <p class="small">
+        <a href="{{ url_for('aphorism', aid=a.id) }}">открыть</a> ·
+        <form method="post" action="{{ url_for('compare_remove', aid=a.id) }}" class="inline">
+          <input type="hidden" name="csrf" value="{{ csrf() }}"><button class="link">убрать</button></form>
+      </p>
+    </article>
+  {% endfor %}
+  </div>
+  <div class="actions">
+    {% if me %}
+    <form method="post" action="{{ url_for('think_start') }}" class="inline">
+      <input type="hidden" name="csrf" value="{{ csrf() }}">
+      <button class="btn">Сформулировать свою мысль</button></form>
+    {% elif not readonly %}
+    <a class="btn" href="{{ url_for('login', next='/compare') }}">Войдите, чтобы записать свою мысль</a>
+    {% endif %}
+    <form method="post" action="{{ url_for('compare_clear') }}" class="inline" onsubmit="return confirm('Очистить сравнение?')">
+      <input type="hidden" name="csrf" value="{{ csrf() }}"><button class="btn ghost">Очистить</button></form>
+  </div>
+  <p class="small muted">Прочитайте, сопоставьте, подумайте. Когда будете готовы — скажите своими словами.</p>
+{% endif %}
+{% endblock %}

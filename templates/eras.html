@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Эпохи{% endblock %}
+{% block body %}
+<h1>Эпохи</h1>
+<p class="muted small">Афоризмы по времени. Даты приблизительные: за основу взята середина жизни автора.</p>
+<ul class="grid eras">
+{% for e in eras %}
+  <li><a href="{{ url_for('aphorisms', era=e.key, sort='time') }}"><strong>{{ e.name }}</strong><br><span class="small muted">{{ e.span }} · {{ e.n }} афор. · {{ e.authors }} авт.</span></a></li>
+{% endfor %}
+</ul>
+{% endblock %}

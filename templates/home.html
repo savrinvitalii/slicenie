@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Пульс размышлений{% endblock %}
+{% block body %}
+<section class="lead">
+  <h1>Истина находится в сличении текстов</h1>
+  <p>Читайте мысли великих людей, сравнивайте их, размышляйте — и формулируйте свою. Здесь никто не скажет, какой ответ правильный.</p>
+</section>
+
+<section>
+  <h2>Что волнует людей сейчас</h2>
+  <p class="small muted">Сколько человек за последние 7 дней размышляли о теме — и как это изменилось по сравнению с предыдущей неделей.</p>
+  <ul class="pulse">
+  {% for p in pulse %}
+    <li>
+      <a href="{{ url_for('theme', slug=p.slug) }}">{{ p.name }}</a>
+      <span class="num">{{ p.cur|people }}</span>
+      {% if p.new %}<span class="delta up">новое</span>
+      {% elif p.pct is not none %}<span class="delta {{ 'up' if p.pct > 0 else ('down' if p.pct < 0 else '') }}">{{ '↑' if p.pct > 0 else ('↓' if p.pct < 0 else '·') }}{{ p.pct|abs }}%</span>{% endif %}
+      <span class="bar" style="--w: {{ (100 * p.cur / (pulse[0].cur or 1))|round|int }}%"></span>
+    </li>
+  {% endfor %}
+  </ul>
+</section>
+
+<section class="cols">
+  <div>
+    <h2>Общая картина за неделю</h2>
+    <p class="big">{{ activity.people }}</p><p class="small muted">человек размышляли</p>
+    <p class="big">{{ activity.comments }}</p><p class="small muted">новых размышлений под афоризмами</p>
+    <p class="big">{{ activity.thoughts }}</p><p class="small muted">опубликованных собственных мыслей</p>
+  </div>
+  <div>
+    <h2>Ваш афоризм</h2>
+    {% if mine %}
+    <blockquote class="quote"><a href="{{ url_for('aphorism', aid=mine.id) }}">{{ mine.text }}</a></blockquote>
+    <p class="meta">{{ mine.author_name }} · {{ mine|year }}</p>
+    <p class="small muted">У каждого он свой и меняется каждый день.</p>
+    {% endif %}
+  </div>
+</section>
+
+{% if top %}
+<section>
+  <h2>Больше всего откликов</h2>
+  <p class="small muted">Отклик — не мера правоты.</p>
+  {% from "_macros.html" import card with context %}
+  {% for a in top %}{{ card(a, '/') }}{% endfor %}
+</section>
+{% endif %}
+
+{% if kin_act %}
+<section>
+  <h2>Недавно у родных</h2>
+  <ul class="plain">{% for k in kin_act %}
+    <li><a href="{{ url_for('thought', tid=k.id) }}">Мысль</a> — <a href="{{ url_for('profile', username=k.username) }}">{{ k.display_name }}</a>, {{ k.published_at|date }}</li>
+  {% endfor %}</ul>
+</section>
+{% endif %}
+{% endblock %}

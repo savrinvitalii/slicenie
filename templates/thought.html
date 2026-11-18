@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Мысль{% endblock %}
+{% block body %}
+<article class="single">
+  {% if t.kin_only %}<p class="kin-mark">◆ Только для родных</p>{% endif %}
+  {% if t.status == 'draft' %}<p class="muted">Черновик</p>{% endif %}
+  <div class="quote own-text">{{ t.body|paras }}</div>
+  <p class="meta"><a href="{{ url_for('profile', username=t.username) }}">{{ t.display_name }}</a> · {{ t.published_at|date }}
+    {% if t.updated_at %}· изменено {{ t.updated_at|date }}{% endif %}</p>
+  {% if mine %}<p><a href="{{ url_for('thought_edit', tid=t.id) }}">изменить</a></p>{% endif %}
+</article>
+<section>
+  <h2>Из чего выросла эта мысль</h2>
+  <ol class="sources">{% for a in sources %}<li><a href="{{ url_for('aphorism', aid=a.id) }}">«{{ a.text }}»</a> — {{ a.author_name }}</li>{% endfor %}</ol>
+</section>
+{% endblock %}

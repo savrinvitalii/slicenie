@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Темы{% endblock %}
+{% block body %}
+<h1>Темы</h1>
+<p class="small muted">Разделы помогают ориентироваться; у каждого афоризма — точные темы внутри разделов.</p>
+{% for g in groups %}
+<section class="theme-group">
+  <h2>{% if g.slug %}<a href="{{ url_for('section', slug=g.slug) }}">{{ g.name }}</a>{% else %}{{ g.name }}{% endif %}
+    {% if g.n %}<span class="small muted">· {{ g.n }}</span>{% endif %}</h2>
+  <ul class="grid">
+  {% for t in g.themes %}<li><a href="{{ url_for('theme', slug=t.slug) }}">{{ t.name }}</a><span class="small muted">{{ t.n }}</span></li>{% endfor %}
+  </ul>
+</section>
+{% endfor %}
+{% endblock %}

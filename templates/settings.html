@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}О себе{% endblock %}
+{% block body %}
+<h1>О себе</h1>
+<form method="post" class="stack narrow">
+  <input type="hidden" name="csrf" value="{{ csrf() }}">
+  <input name="display_name" value="{{ me.display_name }}" maxlength="60" required>
+  <textarea name="bio" rows="5" maxlength="600" placeholder="Несколько слов о себе — по желанию">{{ me.bio }}</textarea>
+  <button class="btn">Сохранить</button>
+</form>
+{% endblock %}
